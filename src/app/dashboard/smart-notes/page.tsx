@@ -150,7 +150,11 @@ export default function SmartNotesPage() {
 
         if (!res.success || !res.markdownContent) throw new Error(res.error ?? 'Unknown error')
 
-        lastResult = { markdownContent: res.markdownContent, title: res.title ?? 'Untitled Note', publicUrl: 'publicUrl' in res ? (res.publicUrl ?? undefined) : undefined }
+        lastResult = { 
+          markdownContent: res.markdownContent, 
+          title: res.title ?? 'Untitled Note', 
+          publicUrl: 'publicUrl' in res ? (res.publicUrl as string) : undefined 
+        }
 
         setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q))
       } catch (err: any) {

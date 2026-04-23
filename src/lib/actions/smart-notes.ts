@@ -7,6 +7,15 @@ import pdfParseModule from 'pdf-parse'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+export type SmartNoteActionResponse = {
+  success: boolean;
+  error?: string;
+  publicUrl?: string;
+  markdownContent?: string;
+  title?: string;
+  data?: any[];
+};
+
 /* ─────────────────────────────────────────────────────────────────────
    Helper: ask Groq to format raw text into notebook markdown + title.
    Uses response_format: json_object to guarantee parseable output.
@@ -55,7 +64,7 @@ ${rawText.slice(0, 12000)}`   // guard against token overflow
 /* ─────────────────────────────────────────────────────────────────────
    Action: Process an IMAGE file via Groq Vision
 ───────────────────────────────────────────────────────────────────── */
-export async function generateNotesFromImage(formData: FormData) {
+export async function generateNotesFromImage(formData: FormData): Promise<SmartNoteActionResponse> {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -128,7 +137,7 @@ Do NOT translate. Output plain text only — no markdown, no commentary.`
 /* ─────────────────────────────────────────────────────────────────────
    Action: Process a PDF file via pdf-parse → Groq text formatting
 ───────────────────────────────────────────────────────────────────── */
-export async function generateNotesFromPDF(formData: FormData) {
+export async function generateNotesFromPDF(formData: FormData): Promise<SmartNoteActionResponse> {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -199,7 +208,7 @@ export async function generateNotesFromPDF(formData: FormData) {
 /* ─────────────────────────────────────────────────────────────────────
    Query: Fetch saved notes for the current user
 ───────────────────────────────────────────────────────────────────── */
-export async function getSmartNotes() {
+export async function getSmartNotes(): Promise<SmartNoteActionResponse> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'User not authenticated' }
