@@ -153,7 +153,8 @@ export default function SmartNotesPage() {
         lastResult = { 
           markdownContent: res.markdownContent, 
           title: res.title ?? 'Untitled Note', 
-          publicUrl: 'publicUrl' in res ? (res.publicUrl as string) : undefined 
+          // @ts-ignore
+          publicUrl: res.publicUrl || undefined 
         }
 
         setQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q))
