@@ -28,8 +28,57 @@ export default function StudyDrivePage() {
     setDocumentText('')
     setMessages([])
     
+    let clientExtractedText = ''
+    let renderedImageBlob: Blob | null = null
+
+    // --- CLIENT-SIDE PDF PROCESSING ---
+    if (selectedFile.type === 'application/pdf') {
+      try {
+        const pdfjs = await import('pdfjs-dist')
+        pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+        
+        const arrayBuffer = await selectedFile.arrayBuffer()
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise
+        
+        // 1. Try Digital Text Extraction
+        let fullText = ''
+        const numPagesToExtract = Math.min(5, pdf.numPages)
+        for (let i = 1; i <= numPagesToExtract; i++) {
+          const page = await pdf.getPage(i)
+          const textContent = await page.getTextContent()
+          const pageText = textContent.items.map((it: any) => it.str).join(' ')
+          fullText += pageText + ' '
+        }
+
+        if (fullText.trim().length > 200) {
+          clientExtractedText = fullText.trim()
+          console.log("[StudyDrive] Digital PDF detected.")
+        } else {
+          // 2. Scanned PDF Fallback: Render first page
+          console.log("[StudyDrive] Scanned PDF detected, rendering...")
+          const page = await pdf.getPage(1)
+          const viewport = page.getViewport({ scale: 2.0 })
+          const canvas = document.createElement('canvas')
+          const context = canvas.getContext('2d')
+          canvas.height = viewport.height
+          canvas.width = viewport.width
+
+          if (context) {
+            await page.render({ canvasContext: context, viewport }).promise
+            const dataUrl = canvas.toDataURL('image/png')
+            const res = await fetch(dataUrl)
+            renderedImageBlob = await res.blob()
+          }
+        }
+      } catch (pdfErr) {
+        console.error("[StudyDrive] Client-side PDF processing failed:", pdfErr)
+      }
+    }
+
     const formData = new FormData()
     formData.append('file', selectedFile)
+    if (clientExtractedText) formData.append('extractedText', clientExtractedText)
+    if (renderedImageBlob) formData.append('renderedImage', renderedImageBlob, 'page1.png')
 
     const res = await extractTextFromPDF(formData)
     

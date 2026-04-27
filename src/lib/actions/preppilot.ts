@@ -2,15 +2,19 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { ensureProfile } from './profile'
 
-export async function createPrepPilotSession(title: string, isPanicMode: boolean, examDate?: string) {
+export async function createPrepPilotSession(title: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Unauthorized' }
 
+  const ensureRes = await ensureProfile(supabase, user)
+  if (!ensureRes.success) return ensureRes
+
   const { data, error } = await supabase
     .from('prep_pilot_sessions')
-    .insert({ user_id: user.id, title, is_panic_mode: isPanicMode, exam_date: examDate })
+    .insert({ user_id: user.id, title })
     .select()
     .single()
 

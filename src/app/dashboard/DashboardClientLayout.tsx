@@ -2,11 +2,22 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { LanguageProvider } from '@/context/LanguageContext'
-import LanguageSelector from '@/components/LanguageSelector'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getNotifications, markNotificationAsRead } from '@/lib/actions/notifications'
+
+import { 
+  Home, 
+  MessageSquare, 
+  FolderRoot, 
+  TrendingUp, 
+  Users, 
+  Settings, 
+  LogOut,
+  GraduationCap,
+  Notebook
+} from 'lucide-react'
 
 function BellIcon({ className = '' }: { className?: string }) {
   return (
@@ -69,56 +80,64 @@ export default function DashboardClientLayout({
     <LanguageProvider>
       <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
         {/* Sidebar */}
-        <div className="w-64 bg-card border-r border-border flex flex-col">
-          <div className="p-6 border-b border-border">
-            <h1 className="text-2xl font-bold text-primary">EngineerOS</h1>
+        <div className="w-64 bg-card border-r border-border flex flex-col shadow-2xl">
+          <div className="p-8 border-b border-border">
+            <h1 className="text-2xl font-black text-primary italic tracking-tighter">Engineer<span className="text-foreground">OS</span></h1>
           </div>
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            <Link href="/dashboard" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              Home
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <Home size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">Home</span>
             </Link>
-            <Link href="/dashboard/studydrive" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              StudyDrive
+            <Link href="/dashboard/viva-ai" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <GraduationCap size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">VivaAI</span>
             </Link>
-            <Link href="/dashboard/viva-ai" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              VivaAI
+            <Link href="/dashboard/files" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <FolderRoot size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">Engineer Drive</span>
             </Link>
-            <Link href="/dashboard/preppilot" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              PrepPilot
+            <Link href="/dashboard/preppilot" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <MessageSquare size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">OS Chat</span>
             </Link>
-            <Link href="/dashboard/smart-notes" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              Smart Notes
+            <Link href="/dashboard/cgpa-predictor" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <TrendingUp size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">CGPA Prediction</span>
             </Link>
-            <Link href="/dashboard/cgpa-predictor" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              CGPA Predictor
+            <Link href="/dashboard/community" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <Users size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">Engineering Square</span>
             </Link>
-            <Link href="/dashboard/community" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              Engineering Square
+            <Link href="/dashboard/smart-notes" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <Notebook size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">Digital Notebook</span>
             </Link>
-            <Link href="/dashboard/settings" className="block px-4 py-3 rounded-xl hover:bg-muted transition-colors">
-              Settings
+            <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-muted transition-all group hover:scale-[1.02] active:scale-95">
+              <Settings size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="font-medium text-sm">Settings</span>
             </Link>
           </nav>
           
-          <div className="p-4 border-t border-border space-y-4">
-            <div className="flex items-center gap-3 px-4 py-2 bg-muted/30 rounded-xl">
-              <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
+          <div className="p-6 border-t border-border space-y-4">
+            <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 rounded-2xl border border-border/50 shadow-inner">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-sm shrink-0 shadow-lg">
                 {`${initialProfile?.first_name?.[0] || 'E'}${initialProfile?.last_name?.[0] || 'U'}`.toUpperCase()}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">
+                <p className="text-sm font-bold truncate">
                   {initialProfile?.first_name ? `${initialProfile.first_name} ${initialProfile.last_name || ''}` : 'Engineer User'}
                 </p>
-                <p className="text-xs text-muted-foreground truncate capitalize">
+                <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest font-black opacity-60">
                   {initialProfile?.bio?.slice(0, 20) || 'Engineering Student'}
                 </p>
               </div>
             </div>
             <button 
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-destructive hover:bg-muted rounded-xl transition-colors text-sm font-medium flex items-center gap-2"
+              className="w-full text-left px-4 py-3 text-destructive hover:bg-destructive/10 rounded-2xl transition-all text-xs font-black uppercase tracking-widest flex items-center gap-3 group active:scale-95"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <LogOut size={16} className="transition-transform group-hover:-translate-x-1" />
               Logout
             </button>
           </div>
@@ -189,10 +208,6 @@ export default function DashboardClientLayout({
 
               <div className="h-6 w-px bg-border"></div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">Preferred Language:</span>
-                <LanguageSelector />
-              </div>
             </div>
           </header>
 

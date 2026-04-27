@@ -5,49 +5,51 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: Request) {
   try {
-    const { syllabusText, question, language, history, isPanicMode, firstName, examDate } = await req.json();
+    const { syllabusText, question, language, history, firstName, complexMode } = await req.json();
 
-    let timeRemainingInfo = '';
-    if (isPanicMode && examDate) {
-      const now = new Date();
-      const exam = new Date(examDate);
-      const diff = exam.getTime() - now.getTime();
-      if (diff > 0) {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        timeRemainingInfo = `\n[URGENT] EXAM TIME REMAINING: ${days} days, ${hours} hours, and ${minutes} minutes. Mention this to motivate the student!`;
-      }
-    }
-
-    let systemPrompt = `You are an expert AI tutor helping a student with their syllabus.
+    let systemInstructions = `You are EngineerOS, an advanced Multimodal Engineering AI. 
     You MUST respond entirely in ${language}.
-    Syllabus Context: ${syllabusText.substring(0, 10000)}`;
+    
+    Identity: You are the core intelligence of EngineerOS. Your goal is to be an interactive engineering tutor, not just a document reader.
+    
+    Response Style:
+    - BE INTERACTIVE: Don't dump everything at once. Give a high-level intuitive explanation first, then ask the user if they want to see the mathematical derivation or a real-world example.
+    - ENGAGING: Use analogies (e.g., "Think of voltage like water pressure").
+    - CONCISE BUT DEEP: Use structured Markdown (bolding, lists) but keep paragraphs short.
+    - FORMATTING: Use LaTeX for all formulas.
+    
+    Context Handling:
+    ${syllabusText ? `Attached Documents/Context:\n${syllabusText.substring(0, 15000)}` : "No external documents attached. Answer based on your internal engineering knowledge."}
+    
+    Capabilities:
+    - Address the student as ${firstName || 'Engineer'}.
+    - If a user asks for "Notes," be thorough. For general chat, stay interactive.`;
 
-    if (isPanicMode) {
-      systemPrompt += `
-      PANIC MODE ACTIVE: The student is stressed for an exam. ${timeRemainingInfo}
-      Your goal is to teach complex topics fast but deeply. Use the "ELI5" (Explain Like I'm 5) method followed by a technical deep dive.
-      Always provide 2 real-world examples.
-      Use Markdown tables or bold text for key formulas.
-      End every explanation with a "Quick Revision" summary of 3 bullet points.
-      Address the student as ${firstName || 'Student'} to keep them calm.`;
-    } else {
-      systemPrompt += `\nAddress the student by their name, ${firstName || 'Student'}, to keep it personalized. Be a helpful and general assistant.`;
+    if (complexMode) {
+      systemInstructions += `\nShow your internal reasoning process clearly within <think> tags.`;
     }
 
+    const formattedMessages = history.map((msg: any) => ({ 
+      role: msg.role === 'model' ? 'assistant' : 'user', 
+      content: msg.content 
+    }));
+
+    // Construct clean history without duplication
     const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.map((msg: any) => ({ 
-        role: msg.role === 'model' ? 'assistant' : 'user', 
-        content: msg.content 
-      })),
-      { role: 'user', content: question }
+      { 
+        role: 'system', 
+        content: systemInstructions 
+      },
+      ...formattedMessages
     ];
+
+    const modelId = complexMode ? "openai/gpt-oss-120b" : "llama-3.3-70b-versatile";
 
     const stream = await groq.chat.completions.create({
       messages: messages as any,
-      model: "llama-3.1-8b-instant",
+      model: modelId,
+      temperature: complexMode ? 0.6 : 0.7,
+      max_completion_tokens: 4096,
       stream: true,
     });
 

@@ -35,12 +35,17 @@ export async function updateProfile(formData: FormData) {
   return { success: true }
 }
 
-async function ensureProfile(supabase: any, user: any) {
-  const { data: profile } = await supabase
+export async function ensureProfile(supabase: any, user: any) {
+  const { data: profile, error: fetchError } = await supabase
     .from('profiles')
     .select('id')
     .eq('id', user.id)
     .maybeSingle();
+
+  if (fetchError) {
+    console.error("Error fetching profile in ensureProfile:", fetchError);
+    return { success: false, error: fetchError.message };
+  }
 
   if (!profile) {
     console.log("Profile missing. Creating one for user:", user.id);
@@ -49,12 +54,18 @@ async function ensureProfile(supabase: any, user: any) {
     const firstName = parts[0]
     const lastName = parts.slice(1).join(' ') || ''
 
-    await supabase.from('profiles').insert({ 
+    const { error: insertError } = await supabase.from('profiles').upsert({ 
       id: user.id, 
       first_name: firstName,
       last_name: lastName
-    });
+    }, { onConflict: 'id' });
+
+    if (insertError) {
+      console.error("Error upserting profile in ensureProfile:", JSON.stringify(insertError));
+      return { success: false, error: "Failed to create/update user profile: " + insertError.message };
+    }
   }
+  return { success: true };
 }
 
 export async function getUserProfile() {
@@ -63,7 +74,9 @@ export async function getUserProfile() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'User not authenticated' }
 
-  await ensureProfile(supabase, user);
+  const ensureRes = await ensureProfile(supabase, user);
+  if (!ensureRes.success) return ensureRes;
+
 
   const { data, error } = await supabase
     .from('profiles')
@@ -78,6 +91,7 @@ export async function getUserProfile() {
 
   // Fallback if profile is still null for some reason
   if (!data) {
+    console.log("Profile still null after ensureProfile. Attempting fallback upsert...");
     const fullName = user.user_metadata?.full_name || 'Student'
     const parts = fullName.split(' ')
     const firstName = parts[0]
@@ -85,15 +99,18 @@ export async function getUserProfile() {
 
     const { data: newProfile, error: insertError } = await supabase
       .from('profiles')
-      .insert({ 
+      .upsert({ 
         id: user.id, 
         first_name: firstName,
         last_name: lastName 
-      })
+      }, { onConflict: 'id' })
       .select()
       .single();
     
-    if (insertError) return { success: false, error: insertError.message };
+    if (insertError) {
+      console.error("Fallback upsert error:", JSON.stringify(insertError));
+      return { success: false, error: insertError.message };
+    }
     return { success: true, data: newProfile };
   }
 
@@ -106,7 +123,9 @@ export async function updatePreferredLanguage(language: Language) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'User not authenticated' }
 
-  await ensureProfile(supabase, user);
+  const ensureRes = await ensureProfile(supabase, user);
+  if (!ensureRes.success) return ensureRes;
+
 
   const { error } = await supabase
     .from('profiles')

@@ -122,11 +122,12 @@ function getAvatarGradient(name: string) {
 }
 
 /* ───── Year badge colors ───── */
+/* ───── Year badge colors ───── */
 const yearColors: Record<string, string> = {
-  FE: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  SE: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
-  TE: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  BE: 'bg-rose-500/15 text-rose-400 border-rose-500/20',
+  FE: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+  SE: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  TE: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  BE: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
 }
 
 /* ═════════════════════════════════════════════
@@ -138,14 +139,12 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
   const [upvotes, setUpvotes] = useState(post.upvotes || 0)
   const [downvotes, setDownvotes] = useState(post.downvotes || 0)
   
-  // Reply State
   const [showReplies, setShowReplies] = useState(false)
   const [replies, setReplies] = useState<any[]>([])
   const [replyContent, setReplyContent] = useState('')
   const [replyYear, setReplyYear] = useState('FE')
   const [replying, setReplying] = useState(false)
   
-  // Toast State
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -154,7 +153,6 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
   }
 
   const handleUpvoteClick = async () => {
-    // Optimistic Update
     setIsUpvoted(!isUpvoted)
     setUpvotes(isUpvoted ? Math.max(0, upvotes - 1) : upvotes + 1)
     if (!isUpvoted && isDownvoted) {
@@ -164,7 +162,6 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
     
     const res = await toggleUpvote(post.id)
     if (res.success) {
-      // Sync exact DB counts
       setUpvotes(res.upvotes)
       setDownvotes(res.downvotes)
     } else {
@@ -174,7 +171,6 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
   }
 
   const handleDownvoteClick = async () => {
-    // Optimistic Update
     setIsDownvoted(!isDownvoted)
     setDownvotes(isDownvoted ? Math.max(0, downvotes - 1) : downvotes + 1)
     if (!isDownvoted && isUpvoted) {
@@ -184,7 +180,6 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
     
     const res = await toggleDownvote(post.id)
     if (res.success) {
-      // Sync exact DB counts
       setUpvotes(res.upvotes)
       setDownvotes(res.downvotes)
     } else {
@@ -217,7 +212,7 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
     if (res.success) {
        setReplyContent('')
        fetchPostReplies()
-       refreshFeed() // Call this to potentially refresh mentor points if they gained some
+       refreshFeed()
        showToast("Reply posted successfully!")
     } else {
        showToast(res.error || "Failed to post reply")
@@ -226,81 +221,76 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
   }
 
   const gradient = getAvatarGradient(post.anonymous_name)
-  const yrClass = yearColors[post.academic_year] || 'bg-gray-800 text-gray-400 border-gray-700'
+  const yrClass = yearColors[post.academic_year] || 'bg-muted text-muted-foreground border-border'
 
   return (
-    <article className="relative bg-gray-900 border border-gray-800/80 rounded-2xl p-5 hover:shadow-lg hover:shadow-black/20 hover:border-gray-700/80 transition-all duration-300">
+    <article className="relative bg-card border border-border rounded-[2rem] p-6 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/20 hover:border-purple-500/30 transition-all duration-300">
       
-      {/* Toast Notification */}
       {toastMessage && (
-        <div className="absolute top-4 right-4 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg border border-gray-700 z-10 animate-in">
+        <div className="absolute top-4 right-4 bg-foreground text-background text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl shadow-2xl z-10 animate-in">
           {toastMessage}
         </div>
       )}
 
-      {/* Card Header */}
-      <div className="flex items-start gap-3 mb-3">
-        <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm`}>
+      <div className="flex items-start gap-4 mb-4">
+        <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-lg font-black shrink-0 shadow-lg`}>
           {post.anonymous_name.charAt(0)}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-[15px] text-white">{post.anonymous_name}</span>
-            <span className="text-gray-600 text-xs">•</span>
-            <span className="text-gray-500 text-xs">{timeAgo(post.created_at)}</span>
+            <span className="font-bold text-[16px] text-foreground tracking-tight">{post.anonymous_name}</span>
+            <span className="text-muted-foreground/30 text-xs">•</span>
+            <span className="text-muted-foreground text-[11px] font-bold uppercase tracking-wider">{timeAgo(post.created_at)}</span>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${yrClass}`}>
+          <div className="flex items-center gap-2 mt-2">
+            <span className={`text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-widest ${yrClass}`}>
               {post.academic_year}
             </span>
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 border border-gray-700/50">
+            <span className="text-[10px] font-black px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/50 uppercase tracking-widest">
               {post.department}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <p className="text-[15px] text-gray-300 leading-relaxed whitespace-pre-wrap pl-[52px]">
+      <p className="text-[15px] text-foreground/80 leading-relaxed whitespace-pre-wrap pl-[64px] font-medium">
         {post.content}
       </p>
 
-      {/* Action Bar */}
-      <div className="flex items-center gap-1 mt-4 pl-[52px]">
+      <div className="flex items-center gap-2 mt-6 pl-[64px]">
         
-        {/* Vote Group */}
-        <div className="flex items-center bg-gray-800/50 rounded-full border border-gray-700/50 p-0.5 mr-2">
+        <div className="flex items-center bg-muted/50 rounded-full border border-border p-1 mr-2">
           <button
             onClick={handleUpvoteClick}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-200 ${
               isUpvoted
-                ? 'text-purple-400 bg-purple-500/10'
-                : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'
+                ? 'text-purple-600 bg-purple-500/10'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
-            <ThumbsUpIcon filled={isUpvoted} className={isUpvoted ? 'text-purple-400' : 'text-gray-500'} />
+            <ThumbsUpIcon filled={isUpvoted} className={isUpvoted ? 'text-purple-600' : 'text-muted-foreground'} />
             <span>{upvotes}</span>
           </button>
           
-          <div className="w-px h-4 bg-gray-700 mx-1"></div>
+          <div className="w-[1px] h-4 bg-border mx-1"></div>
           
           <button
             onClick={handleDownvoteClick}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-200 ${
               isDownvoted
-                ? 'text-red-400 bg-red-500/10'
-                : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'
+                ? 'text-red-600 bg-red-500/10'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
-            <ThumbsDownIcon filled={isDownvoted} className={isDownvoted ? 'text-red-400' : 'text-gray-500'} />
+            <ThumbsDownIcon filled={isDownvoted} className={isDownvoted ? 'text-red-600' : 'text-muted-foreground'} />
             <span>{downvotes > 0 ? downvotes : ''}</span>
           </button>
         </div>
 
         <button 
           onClick={toggleReplies}
-          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-            showReplies ? 'bg-gray-800 text-white' : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 ${
+            showReplies ? 'bg-foreground text-background shadow-lg' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <MessageIcon />
@@ -309,48 +299,45 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
 
         <button 
           onClick={handleShare}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-all duration-200"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
         >
           <ShareIcon />
           <span>Share</span>
         </button>
       </div>
 
-      {/* Replies Section */}
       {showReplies && (
-        <div className="mt-5 pl-[52px] border-t border-gray-800/50 pt-5 space-y-4">
+        <div className="mt-6 pl-[64px] border-t border-border/50 pt-6 space-y-5">
           
-          {/* Display Replies */}
           {replies.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {replies.map(r => {
                 const repGrad = getAvatarGradient(r.anonymous_name);
                 return (
-                  <div key={r.id} className="flex gap-3 animate-in">
-                    <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${repGrad} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                  <div key={r.id} className="flex gap-4 animate-in">
+                    <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${repGrad} flex items-center justify-center text-white text-sm font-black shrink-0 shadow-md`}>
                       {r.anonymous_name.charAt(0)}
                     </div>
-                    <div className="bg-gray-800/40 rounded-2xl rounded-tl-none p-3.5 flex-1 border border-gray-700/30">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-[13px] text-white">{r.anonymous_name}</span>
-                        <span className="text-[11px] text-gray-500">{timeAgo(r.created_at)}</span>
+                    <div className="bg-muted/30 rounded-[1.5rem] rounded-tl-none p-4 flex-1 border border-border/50 shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-[13px] text-foreground tracking-tight">{r.anonymous_name}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{timeAgo(r.created_at)}</span>
                       </div>
-                      <p className="text-[13px] text-gray-300 leading-relaxed">{r.content}</p>
+                      <p className="text-[13px] text-foreground/80 leading-relaxed font-medium">{r.content}</p>
                     </div>
                   </div>
                 )
               })}
             </div>
           ) : (
-            <div className="text-sm text-gray-500 italic">No replies yet. Be the first to help!</div>
+            <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-[0.2em] py-4 bg-muted/20 rounded-2xl text-center border border-dashed border-border">No contributions yet. Be the first!</div>
           )}
 
-          {/* Reply Input Form */}
-          <form onSubmit={handleReplySubmit} className="flex gap-2 items-start pt-2">
+          <form onSubmit={handleReplySubmit} className="flex gap-3 items-center pt-2">
             <select 
               value={replyYear} 
               onChange={e => setReplyYear(e.target.value)} 
-              className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded-xl px-2 py-2.5 focus:outline-none focus:border-purple-500/50"
+              className="bg-card border border-border text-foreground text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             >
               <option value="FE">FE</option><option value="SE">SE</option><option value="TE">TE</option><option value="BE">BE</option>
             </select>
@@ -358,16 +345,16 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
               type="text"
               value={replyContent}
               onChange={e => setReplyContent(e.target.value)}
-              placeholder="Add a reply..."
-              className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-[13px] text-white focus:outline-none focus:border-purple-500/50"
+              placeholder="Add your insight..."
+              className="flex-1 bg-muted/50 border border-border rounded-xl px-5 py-3 text-[13px] font-medium text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
               disabled={replying}
             />
             <button 
               type="submit" 
               disabled={replying || !replyContent.trim()} 
-              className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50 transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all shadow-lg shadow-purple-500/20 active:scale-95"
             >
-              {replying ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Send'}
+              {replying ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Post'}
             </button>
           </form>
         </div>
@@ -389,7 +376,6 @@ export default function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // New post state
   const [content, setContent] = useState('')
   const [year, setYear] = useState('FE')
   const [dept, setDept] = useState('Computer Science')
@@ -435,86 +421,89 @@ export default function CommunityPage() {
     setSubmitting(false)
   }
 
-  /* Client-side search filter */
   const filteredPosts = searchQuery.trim()
     ? posts.filter(p => p.content.toLowerCase().includes(searchQuery.toLowerCase()) || p.anonymous_name.toLowerCase().includes(searchQuery.toLowerCase()))
     : posts
 
-  /* ────────────────────── RENDER ────────────────────── */
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto pb-20">
 
       {/* ─── Page Header ─── */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Engineering Square</h1>
-        <p className="text-gray-500 mt-1 text-[15px]">Ask doubts anonymously. Help your peers. Learn together.</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic">Engineering Square</h1>
+        <p className="text-muted-foreground mt-2 text-[15px] font-medium leading-relaxed max-w-xl">
+          The sanctuary for engineering minds. Ask anonymously, mentor peers, and cultivate professional excellence together.
+        </p>
       </div>
 
       {/* ─── 2-Column Grid ─── */}
-      <div className="flex gap-8">
+      <div className="flex flex-col lg:flex-row gap-10">
 
         {/* ═══ LEFT: Feed Column ═══ */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 space-y-8">
 
-          {/* ── Search Bar (Google pill) ── */}
-          <div className="relative mb-4">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+          {/* ── Search Bar ── */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-purple-600/5 blur-3xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+            <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-purple-600 transition-colors" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search doubts, topics, or keywords…"
-              className="w-full pl-12 pr-4 py-3.5 bg-gray-900 border border-gray-800 rounded-full text-[15px] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 transition-all"
+              placeholder="Query doubts, topics, or engineering concepts…"
+              className="w-full pl-14 pr-6 py-5 bg-card border border-border rounded-full text-[15px] font-medium text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm"
             />
           </div>
 
-          {/* ── Create-a-post prompt ── */}
+          {/* ── Create Post Prompt ── */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="w-full mb-6 flex items-center gap-3 px-5 py-3.5 bg-gray-900 border border-gray-800 rounded-2xl text-gray-500 hover:border-gray-700 hover:bg-gray-900/80 transition-all group"
+            className="w-full flex items-center gap-4 px-6 py-5 bg-card border border-border rounded-[2rem] text-muted-foreground hover:border-purple-500/30 hover:bg-muted/30 transition-all group shadow-sm"
           >
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shrink-0">
-              <UserIcon className="text-white w-4 h-4" />
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+              <UserIcon className="text-white w-5 h-5" />
             </div>
-            <span className="text-[15px] group-hover:text-gray-400 transition-colors">What&apos;s your engineering doubt?</span>
-            <div className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-600/10 text-purple-400 text-xs font-medium">
-              <PlusIcon className="w-3.5 h-3.5" />
-              Post
+            <span className="text-[15px] font-semibold group-hover:text-foreground transition-colors italic">What architectural doubt is on your mind?</span>
+            <div className="ml-auto flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-purple-600/20 active:scale-95">
+              <PlusIcon className="w-4 h-4" />
+              Initiate
             </div>
           </button>
 
           {/* ── Filter Chips ── */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
             {years.map(y => (
               <button
                 key={y}
                 onClick={() => setFilter(y)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border ${
+                className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 border ${
                   filter === y
-                    ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
-                    : 'bg-transparent text-gray-400 border-gray-800 hover:bg-gray-800/60 hover:text-gray-300'
+                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-600/20'
+                    : 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                 }`}
               >
-                {y === 'ALL' ? '🔥 All Posts' : y}
+                {y === 'ALL' ? '🔥 Spotlight' : y}
               </button>
             ))}
           </div>
 
           {/* ── Feed Content ── */}
           {loading ? (
-            <div className="flex justify-center py-24">
+            <div className="flex justify-center py-32">
               <Spinner />
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl py-20 px-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800 mb-5">
-                <MessageIcon className="text-gray-500 w-7 h-7" />
+            <div className="bg-card border-2 border-dashed border-border rounded-[3rem] py-32 px-10 text-center space-y-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-muted shadow-inner">
+                <MessageIcon className="text-muted-foreground/30 w-10 h-10" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-1">No posts yet</h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto">Be the first to ask a doubt or start a discussion in the Engineering Square.</p>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-foreground tracking-tight uppercase">Void Detected</h3>
+                <p className="text-muted-foreground text-sm font-medium max-w-xs mx-auto">Be the pioneer. Initiate the first technical discussion in this quadrant.</p>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {filteredPosts.map(post => (
                 <PostCard 
                   key={post.id} 
@@ -528,50 +517,70 @@ export default function CommunityPage() {
           )}
         </div>
 
-        {/* ═══ RIGHT: Sidebar (hidden on mobile) ═══ */}
-        <aside className="hidden lg:block w-[300px] shrink-0 space-y-5">
+        {/* ═══ RIGHT: Sidebar ═══ */}
+        <aside className="lg:w-[320px] shrink-0 space-y-6">
 
-          {/* Community Rules Card */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <ShieldIcon className="text-purple-400" />
-              <h3 className="font-semibold text-white text-sm">Community Guidelines</h3>
+          {/* Mentor Points Widget */}
+          <div className="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-purple-600/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 blur-[60px] -mr-20 -mt-20 group-hover:bg-white/20 transition-colors" />
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                <SparkleIcon className="text-white" />
+              </div>
+              <h3 className="font-black text-[10px] uppercase tracking-[0.3em]">Mentor Status</h3>
             </div>
-            <ul className="space-y-3 text-[13px] text-gray-400">
-              <li className="flex items-start gap-2">
-                <span className="text-purple-400 mt-0.5">1.</span>
-                <span>Keep it respectful and educational.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-400 mt-0.5">2.</span>
-                <span>All posts are AI-moderated for safety.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-400 mt-0.5">3.</span>
-                <span>Your identity is always anonymous.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-400 mt-0.5">4.</span>
-                <span>Help others—upvote useful doubts.</span>
-              </li>
+            <div className="flex items-baseline gap-2 mb-4 relative z-10">
+              <span className="text-6xl font-black tracking-tighter">{mentorPoints}</span>
+              <span className="text-xs font-black uppercase tracking-[0.2em] opacity-60">Points</span>
+            </div>
+            <p className="text-[12px] font-medium leading-relaxed opacity-80 mb-6 relative z-10">
+              Cultivate your influence. Help peers with technical doubts to ascend the leaderboard.
+            </p>
+            <div className="relative w-full bg-black/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+              <div className="bg-white h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(255,255,255,0.5)]" style={{ width: `${Math.min(mentorPoints * 2, 100)}%` }} />
+            </div>
+          </div>
+
+          {/* Community Guidelines Widget */}
+          <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <ShieldIcon className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-foreground">Protocol</h3>
+            </div>
+            <ul className="space-y-4">
+              {[
+                "Strict Academic Integrity",
+                "Constructive technical discourse",
+                "Identity-neutral peer support",
+                "Upvote quality contributions"
+              ].map((rule, i) => (
+                <li key={i} className="flex items-start gap-4 group">
+                  <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 mt-1">0{i+1}</span>
+                  <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">{rule}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Trending Tags */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingIcon className="text-purple-400" />
-              <h3 className="font-semibold text-white text-sm">Trending Tags</h3>
+          {/* Trending Quadrant Widget */}
+          <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+               <div className="p-2 bg-amber-500/10 rounded-lg">
+                <TrendingIcon className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="font-black text-[10px] uppercase tracking-[0.3em] text-foreground">Trending</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {['FE', 'SE', 'TE', 'BE'].map(tag => (
                 <button
                   key={tag}
                   onClick={() => setFilter(tag)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                     filter === tag
-                      ? (yearColors[tag] || 'bg-gray-800 text-gray-400 border-gray-700')
-                      : 'bg-gray-800/50 text-gray-500 border-gray-700/50 hover:text-gray-300 hover:border-gray-600'
+                      ? (yearColors[tag] || 'bg-muted text-foreground border-border')
+                      : 'bg-muted/50 text-muted-foreground border-border/50 hover:text-foreground hover:border-purple-500/30'
                   }`}
                 >
                   #{tag}
@@ -579,104 +588,89 @@ export default function CommunityPage() {
               ))}
             </div>
           </div>
-
-          {/* Mentor Points */}
-          <div className="bg-gradient-to-br from-purple-900/30 to-violet-900/20 border border-purple-500/15 rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <SparkleIcon className="text-purple-400" />
-              <h3 className="font-semibold text-white text-sm">🏆 Your Mentor Points</h3>
-            </div>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-4xl font-bold text-white">{mentorPoints}</span>
-              <span className="text-sm text-gray-400">pts</span>
-            </div>
-            <p className="text-[12px] text-gray-500 leading-relaxed">
-              Earn points by posting doubts, helping peers, and getting upvotes. Top mentors get featured every week.
-            </p>
-            <div className="mt-3 w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500 to-violet-400 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(mentorPoints * 2, 100)}%` }} />
-            </div>
-          </div>
         </aside>
       </div>
 
       {/* ═══ CREATE POST MODAL ═══ */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in" onClick={() => setIsModalOpen(false)}>
           <div
-            className="bg-gray-950 border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50 overflow-hidden animate-in"
+            className="bg-card border border-border rounded-[3rem] w-full max-w-xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-              <h2 className="text-lg font-semibold text-white">New Discussion</h2>
+            <div className="flex items-center justify-between px-10 py-8 border-b border-border/50">
+              <div className="flex items-center gap-4">
+                 <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg">
+                    <PlusIcon className="text-white w-6 h-6" />
+                 </div>
+                 <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase italic">Initiate Discussion</h2>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-gray-800 transition-colors text-gray-500 hover:text-white"
+                className="p-3 rounded-full hover:bg-muted transition-all text-muted-foreground hover:text-foreground active:scale-90"
               >
                 <XIcon />
               </button>
             </div>
 
             {/* Modal Body */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-10 space-y-8">
 
-              {/* Selects Row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Year</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Academic Year</label>
                   <select
                     value={year}
                     onChange={e => setYear(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                    className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all appearance-none cursor-pointer"
                   >
                     {years.filter(y => y !== 'ALL').map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Department</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Core Department</label>
                   <select
                     value={dept}
                     onChange={e => setDept(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                    className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all appearance-none cursor-pointer"
                   >
                     {departments.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* Content */}
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Your Doubt</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">Technical Discourse</label>
                 <textarea
                   value={content}
                   onChange={e => setContent(e.target.value)}
-                  placeholder="Describe your doubt in detail…"
-                  rows={5}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-xl text-[15px] text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 resize-none transition-colors"
+                  placeholder="Articulate your doubt or insight here…"
+                  rows={6}
+                  className="w-full px-6 py-5 bg-muted/50 border border-border rounded-[1.5rem] text-[15px] font-medium text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 resize-none transition-all"
                   disabled={submitting}
                 />
               </div>
 
               {error && (
-                <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl">
+                <div className="px-6 py-4 bg-red-500/5 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   {error}
                 </div>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={submitting || !content.trim()}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-[15px] rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
+                className="w-full py-5 bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-[0.3em] text-xs rounded-[1.5rem] transition-all disabled:opacity-40 shadow-2xl shadow-purple-600/30 active:scale-[0.98] flex items-center justify-center gap-4"
               >
                 {submitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Moderating your post…
+                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                    Analyzing Content…
                   </>
                 ) : (
-                  'Post Anonymously'
+                  <>Post Anonymously</>
                 )}
               </button>
             </form>
@@ -684,15 +678,7 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* Inline animation style */}
       <style jsx>{`
-        .animate-in {
-          animation: modal-in 0.2s ease-out;
-        }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.95) translateY(10px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

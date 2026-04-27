@@ -176,145 +176,199 @@ export default function CgpaPredictorPage() {
   const rc = sgpaVal>=8?'#10b981':sgpaVal>=6?'#3b82f6':sgpaVal>=4?'#f59e0b':'#ef4444'
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-purple-400 flex items-center gap-3"><span>📊</span> Smart CGPA Predictor</h1>
-          <p className="text-gray-400 text-sm mt-1">
-            {firstName ? <>Hey <span className="text-purple-300 font-semibold">{firstName}</span>! </> : ''}
+          <h1 className="text-3xl font-black text-foreground tracking-tighter flex items-center gap-3">
+            <span className="p-2 bg-purple-500/10 rounded-xl">📊</span> 
+            Smart CGPA Predictor
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2 font-medium">
+            {firstName ? <>Hey <span className="text-purple-600 dark:text-purple-400 font-bold">{firstName}</span>! </> : ''}
             G.H. Raisoni — Sem 4 • {subjects.length} subjects • {totalCredits} credits
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={()=>setShowAddForm(!showAddForm)} className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-700 bg-gray-800 text-gray-300 hover:text-white hover:border-emerald-500 transition-all">{showAddForm?'✕ Cancel':'➕ Add Subject'}</button>
-          <button onClick={()=>setShowHistory(!showHistory)} className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-700 bg-gray-800 text-gray-300 hover:text-white hover:border-purple-500 transition-all">{showHistory?'← Back':'📜 History'}</button>
-          <button onClick={handleReset} className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-700 bg-gray-800 text-gray-300 hover:text-white hover:border-red-500 transition-all">🔄 Reset</button>
+          <button onClick={()=>setShowAddForm(!showAddForm)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:border-emerald-500 transition-all shadow-sm">{showAddForm?'✕ Cancel':'➕ Add Subject'}</button>
+          <button onClick={()=>setShowHistory(!showHistory)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:border-purple-500 transition-all shadow-sm">{showHistory?'← Back':'📜 History'}</button>
+          <button onClick={handleReset} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground hover:border-red-500 transition-all shadow-sm">🔄 Reset</button>
         </div>
       </div>
 
-      {/* Add Subject Form */}
       {showAddForm && !showHistory && (
-        <div className="bg-gray-900 border border-emerald-500/30 rounded-2xl p-5 space-y-4 animate-in fade-in slide-in-from-top-2">
-          <h3 className="font-bold text-white text-lg">Add New Subject</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-card border border-emerald-500/30 rounded-[2rem] p-8 space-y-6 shadow-xl animate-in fade-in slide-in-from-top-4">
+          <h3 className="font-black text-foreground text-xl tracking-tight">Add New Subject</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="sm:col-span-2">
-              <label className="text-xs text-gray-500 font-bold uppercase block mb-1">Subject Name</label>
-              <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="e.g. Data Structures" className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600 focus:outline-none placeholder-gray-600" />
+              <label className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block mb-2">Subject Name</label>
+              <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="e.g. Data Structures" className="w-full p-4 bg-muted/50 border border-border rounded-2xl text-foreground text-sm focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 focus:outline-none transition-all placeholder:text-muted-foreground/30" />
             </div>
             <div>
-              <label className="text-xs text-gray-500 font-bold uppercase block mb-1">Credits</label>
-              <input type="number" min="1" max="10" value={newCredits} onChange={e=>setNewCredits(e.target.value)} className="w-full p-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600 focus:outline-none" />
+              <label className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block mb-2">Credits</label>
+              <input type="number" min="1" max="10" value={newCredits} onChange={e=>setNewCredits(e.target.value)} className="w-full p-4 bg-muted/50 border border-border rounded-2xl text-foreground text-sm focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 focus:outline-none transition-all" />
             </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-500 font-bold uppercase block mb-2">Type</label>
-            <div className="flex gap-2">
-              <button onClick={()=>setNewType('theory')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${newType==='theory'?'bg-blue-600 text-white':'bg-gray-800 text-gray-400 border border-gray-700'}`}>📘 Theory</button>
-              <button onClick={()=>setNewType('practical')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${newType==='practical'?'bg-amber-600 text-white':'bg-gray-800 text-gray-400 border border-gray-700'}`}>🔧 Practical</button>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onClick={()=>setNewType('theory')} className={`p-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-3 border ${newType==='theory'?'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20':'bg-muted/50 text-muted-foreground border-border hover:bg-muted'}`}>📘 Theory</button>
+            <button onClick={()=>setNewType('practical')} className={`p-4 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-3 border ${newType==='practical'?'bg-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/20':'bg-muted/50 text-muted-foreground border-border hover:bg-muted'}`}>🔧 Practical</button>
           </div>
           {newType==='theory' ? (
-            <p className="text-xs text-gray-500">Theory subjects use TAE (20) + CAE (20) + ESE (60) = 100 marks</p>
+            <p className="text-xs text-muted-foreground font-medium bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">Theory subjects use standard TAE (20) + CAE (20) + ESE (60) = 100 marks distribution.</p>
           ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-500">Select which components this practical has:</p>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                  <input type="checkbox" checked={newHasInt} onChange={e=>setNewHasInt(e.target.checked)} className="accent-purple-500 w-4 h-4" /> INT
-                  {newHasInt && <input type="number" min="1" max="100" value={newIntMax} onChange={e=>setNewIntMax(e.target.value)} className="w-16 p-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs text-center" />}
+            <div className="space-y-4 bg-amber-500/5 p-6 rounded-[1.5rem] border border-amber-500/10">
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-black uppercase tracking-widest">Practical Components</p>
+              <div className="flex gap-8">
+                <label className="flex items-center gap-3 text-sm text-foreground font-semibold cursor-pointer group">
+                  <input type="checkbox" checked={newHasInt} onChange={e=>setNewHasInt(e.target.checked)} className="accent-purple-600 w-5 h-5 rounded-lg" /> 
+                  <span>Internal (INT)</span>
+                  {newHasInt && <input type="number" min="1" max="100" value={newIntMax} onChange={e=>setNewIntMax(e.target.value)} className="w-20 p-2 bg-background border border-border rounded-xl text-foreground text-xs text-center font-bold" />}
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                  <input type="checkbox" checked={newHasExt} onChange={e=>setNewHasExt(e.target.checked)} className="accent-purple-500 w-4 h-4" /> EXT
-                  {newHasExt && <input type="number" min="1" max="100" value={newExtMax} onChange={e=>setNewExtMax(e.target.value)} className="w-16 p-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs text-center" />}
+                <label className="flex items-center gap-3 text-sm text-foreground font-semibold cursor-pointer group">
+                  <input type="checkbox" checked={newHasExt} onChange={e=>setNewHasExt(e.target.checked)} className="accent-purple-600 w-5 h-5 rounded-lg" />
+                  <span>External (EXT)</span>
+                  {newHasExt && <input type="number" min="1" max="100" value={newExtMax} onChange={e=>setNewExtMax(e.target.value)} className="w-20 p-2 bg-background border border-border rounded-xl text-foreground text-xs text-center font-bold" />}
                 </label>
               </div>
             </div>
           )}
-          <button onClick={addSubject} disabled={!newName.trim()||(newType==='practical'&&!newHasInt&&!newHasExt)} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white font-bold transition-all disabled:opacity-40 active:scale-[0.97]">✅ Add Subject</button>
+          <button onClick={addSubject} disabled={!newName.trim()||(newType==='practical'&&!newHasInt&&!newHasExt)} className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all disabled:opacity-40 shadow-xl shadow-emerald-500/20 active:scale-[0.98]">✅ Add Subject</button>
         </div>
       )}
 
       {showHistory ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Saved Predictions</h2>
-          {loadingHistory ? <div className="text-center py-12 text-gray-500">Loading...</div>
-          : history.length===0 ? <div className="text-center py-12 text-gray-500">No saved predictions yet.</div>
-          : <div className="space-y-3">{history.map((h:any)=>(
-              <div key={h.id} onClick={() => { fillFromHistory(h); setShowHistory(false); }} className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl border border-gray-700 cursor-pointer hover:border-purple-500 transition-all">
-                <div><span className="font-bold text-white">{h.semester}</span><span className="text-gray-500 text-sm ml-3">{new Date(h.created_at).toLocaleDateString()}</span></div>
-                <div className="flex items-center gap-3">{h.target_sgpa&&<span className="text-xs text-gray-400">Target: {h.target_sgpa}</span>}<span className="text-lg font-bold text-purple-400">{h.predicted_sgpa} SGPA</span></div>
+        <div className="bg-card border border-border rounded-[2rem] p-8 shadow-sm">
+          <h2 className="text-2xl font-black text-foreground tracking-tight mb-8 flex items-center gap-3">
+            <span className="p-2 bg-muted rounded-xl">📜</span>
+            Saved Predictions
+          </h2>
+          {loadingHistory ? <div className="text-center py-20 text-muted-foreground animate-pulse font-bold tracking-widest uppercase text-xs">Accessing Archives...</div>
+          : history.length===0 ? <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-[2rem] font-medium italic">No saved predictions yet.</div>
+          : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{history.map((h:any)=>(
+              <div key={h.id} onClick={() => { fillFromHistory(h); setShowHistory(false); }} className="flex items-center justify-between p-6 bg-muted/20 hover:bg-muted/50 rounded-[1.5rem] border border-border cursor-pointer transition-all group">
+                <div>
+                  <span className="font-black text-foreground text-sm uppercase tracking-wider">{h.semester}</span>
+                  <p className="text-muted-foreground text-[10px] font-bold mt-1 uppercase tracking-widest">{new Date(h.created_at).toLocaleDateString()}</p>
+                </div>
+                <div className="flex items-center gap-6">
+                  {h.target_sgpa&&<div className="text-right hidden sm:block"><p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mb-1">Target</p><p className="text-xs font-bold text-foreground">{h.target_sgpa}</p></div>}
+                  <div className="text-right"><p className="text-[8px] text-purple-600 dark:text-purple-400 font-black uppercase tracking-widest mb-1">Achieved</p><p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tighter">{h.predicted_sgpa}</p></div>
+                </div>
               </div>))}</div>}
         </div>
       ) : (
         <>
-          {/* SGPA + What-If */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center">
-              <div className="relative w-32 h-32">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-card border border-border rounded-[2.5rem] p-8 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500" />
+              <div className="relative w-40 h-40">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="#1f2937" strokeWidth="8"/>
-                  <circle cx="60" cy="60" r="54" fill="none" stroke={rc} strokeWidth="8" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ-dash} className="transition-all duration-700 ease-out"/>
+                  <circle cx="60" cy="60" r="54" fill="none" className="stroke-muted" strokeWidth="10"/>
+                  <circle cx="60" cy="60" r="54" fill="none" stroke={rc} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ-dash} className="transition-all duration-1000 ease-out"/>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-black text-white">{sgpa!==null?sgpa.toFixed(2):'—'}</span>
-                  <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">SGPA</span>
+                  <span className="text-4xl font-black text-foreground tracking-tighter">{sgpa!==null?sgpa.toFixed(2):'—'}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-1">SGPA</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-3">{sgpa!==null&&sgpa>=8?'🎉 Excellent!':sgpa!==null&&sgpa>=6?'👍 Good!':sgpa!==null?'💪 Keep going!':'Enter marks to begin'}</p>
+              <p className="text-xs font-bold text-muted-foreground mt-6 uppercase tracking-widest">{sgpa!==null&&sgpa>=8?'🎉 Excellent!':sgpa!==null&&sgpa>=6?'👍 Good Job':sgpa!==null?'💪 Keep Pushing':'Enter Marks'}</p>
             </div>
-            <div className="md:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div><h2 className="text-lg font-bold text-white">🔮 What-If Analysis</h2><p className="text-xs text-gray-500 mt-1">Leave the last mark field blank → see what you need!</p></div>
-                <button onClick={()=>setWhatIfMode(!whatIfMode)} className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${whatIfMode?'bg-purple-600':'bg-gray-700'}`}><span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ${whatIfMode?'translate-x-6':''}`}/></button>
+
+            <div className="md:col-span-2 bg-card border border-border rounded-[2.5rem] p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
+                    <span className="p-2 bg-purple-500/10 rounded-xl">🔮</span>
+                    What-If Analysis
+                  </h2>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">Leave any final mark field blank to predict required score.</p>
+                </div>
+                <button 
+                  onClick={()=>setWhatIfMode(!whatIfMode)} 
+                  className={`relative w-14 h-7 rounded-full transition-all duration-500 ${whatIfMode?'bg-purple-600 shadow-lg shadow-purple-600/30':'bg-muted border border-border'}`}
+                >
+                  <span className={`absolute top-1 left-1 w-5 h-5 bg-background rounded-full transition-all duration-500 shadow-sm ${whatIfMode?'translate-x-7 bg-white':'bg-muted-foreground/30'}`}/>
+                </button>
               </div>
-              {whatIfMode&&(<div className="space-y-4">
-                <div><label className="text-sm text-gray-400 font-medium">Target SGPA</label><input type="number" min="0" max="10" step="0.01" value={targetSgpa} onChange={e=>setTargetSgpa(e.target.value)} placeholder="e.g. 8.5" className="w-full mt-1 p-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:ring-2 focus:ring-purple-600/30 focus:border-purple-600 focus:outline-none"/></div>
-                {whatIfResults&&whatIfResults.length>0&&<div className="space-y-2">{whatIfResults.map(w=>(
-                  <div key={w.idx} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <span className="text-sm text-gray-300 truncate mr-2">{subjects[w.idx].name}</span>
-                    <span className={`text-sm font-bold shrink-0 ${w.neededMarks==='impossible'?'text-red-400':'text-emerald-400'}`}>
-                      {w.neededMarks==='impossible'?'❌ Not achievable':`Need ≥ ${w.neededMarks} in ${w.fieldName}`}
-                    </span></div>))}</div>}
-              </div>)}
+              
+              {whatIfMode ? (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                  <div className="relative group">
+                    <label className="text-[10px] text-muted-foreground font-black uppercase tracking-widest block mb-2 ml-1">Target SGPA Goal</label>
+                    <input type="number" min="0" max="10" step="0.01" value={targetSgpa} onChange={e=>setTargetSgpa(e.target.value)} placeholder="e.g. 8.5" className="w-full p-4 bg-muted/30 border border-border rounded-2xl text-foreground font-bold text-lg focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 focus:outline-none transition-all placeholder:text-muted-foreground/20"/>
+                  </div>
+                  {whatIfResults && whatIfResults.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {whatIfResults.map(w => (
+                        <div key={w.idx} className="flex flex-col p-4 bg-muted/20 rounded-2xl border border-border hover:border-purple-500/30 transition-all group">
+                          <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-2 truncate">{subjects[w.idx].name}</span>
+                          <span className={`text-sm font-bold flex items-center gap-2 ${w.neededMarks==='impossible'?'text-red-500':'text-emerald-600 dark:text-emerald-400'}`}>
+                            {w.neededMarks==='impossible' ? (
+                              <><span className="text-lg">⚠️</span> Impossible</>
+                            ) : (
+                              <><span className="text-lg">🎯</span> Need ≥ {w.neededMarks} in {w.fieldName}</>
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 bg-muted/10 rounded-2xl border border-dashed border-border">
+                      <p className="text-xs text-muted-foreground font-medium">Set a target SGPA above your current projected score.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center py-10 opacity-30">
+                   <div className="text-center space-y-3">
+                      <div className="text-4xl">💭</div>
+                      <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Analysis Engine Standby</p>
+                   </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Subject Cards */}
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {subjects.map((s,i) => {
               const r=results[i]; const maxTotal=s.markFields.reduce((a,f)=>a+f.max,0)
               return (
-                <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2 group hover:border-gray-700 transition-colors">
-                  <div className="flex items-start justify-between gap-2">
+                <div key={s.id} className="bg-card border border-border rounded-3xl p-5 space-y-4 hover:shadow-lg transition-all group relative">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <h3 className="font-bold text-white text-sm truncate">{s.name}</h3>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider ${s.type==='theory'?'text-blue-400':'text-amber-400'}`}>{s.type}</span>
-                        <span className="text-[10px] text-gray-600">•</span>
-                        <span className="text-[10px] text-gray-500 font-bold">{s.credits} Cr</span>
-                        <span className="text-[10px] text-gray-600">•</span>
-                        <span className="text-[10px] text-gray-500">{s.markFields.map(f=>f.key).join(' + ')}</span>
+                      <h3 className="font-bold text-foreground text-base truncate tracking-tight">{s.name}</h3>
+                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border ${s.type==='theory'?'bg-blue-500/10 text-blue-600 border-blue-500/20':'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>{s.type}</span>
+                        <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">{s.credits} Credits</span>
+                        <div className="flex gap-1">
+                           {s.markFields.map(f => <span key={f.key} className="text-[8px] px-1.5 py-0.5 bg-muted rounded-md text-muted-foreground font-black">{f.key}</span>)}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {r.grade&&<span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border ${GC[r.grade]}`}>{r.grade}</span>}
-                      <button onClick={()=>deleteSubject(i)} className="opacity-0 group-hover:opacity-100 p-1 text-gray-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Remove subject">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {r.grade && (
+                        <div className={`px-3 py-1 rounded-xl text-xs font-black border shadow-sm ${GC[r.grade]}`}>
+                          {r.grade}
+                        </div>
+                      )}
+                      <button onClick={()=>deleteSubject(i)} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all" title="Remove subject">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                       </button>
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {s.markFields.map(f=>(
-                      <div key={f.key} className="flex-1 min-w-[60px]">
-                        <label className="text-[9px] text-gray-500 font-bold uppercase block mb-0.5">{f.key} <span className="text-gray-700">/{f.max}</span></label>
-                        <input type="number" min="0" max={f.max} value={marks[i][f.key]} onChange={e=>updateMark(i,f.key,e.target.value)} placeholder="0" className="w-full p-1.5 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-purple-600/30 focus:border-purple-600 focus:outline-none transition-all placeholder-gray-700"/>
+                      <div key={f.key} className="relative">
+                        <label className="text-[9px] text-muted-foreground font-black uppercase tracking-widest block mb-1.5 ml-1">{f.key} <span className="opacity-30">/ {f.max}</span></label>
+                        <input type="number" min="0" max={f.max} value={marks[i][f.key]} onChange={e=>updateMark(i,f.key,e.target.value)} placeholder="—" className="w-full p-2.5 text-center bg-muted/40 border border-border rounded-xl text-foreground font-black text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 focus:outline-none transition-all placeholder:text-muted-foreground/20"/>
                       </div>
                     ))}
                   </div>
-                  {r.total!==null&&(
-                    <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-gray-800/50">
-                      <span className="text-gray-500">Total: <span className="text-white font-bold">{r.total}/{maxTotal}</span></span>
-                      <span className="text-gray-500">{r.pct?.toFixed(1)}% • GP: <span className="text-purple-400 font-bold">{r.gradePoints}</span></span>
+
+                  {r.total!==null && (
+                    <div className="flex items-center justify-between text-[11px] pt-3 border-t border-border mt-2">
+                      <span className="text-muted-foreground font-medium">Aggregate: <span className="text-foreground font-black">{r.total} <span className="text-muted-foreground/30">/</span> {maxTotal}</span></span>
+                      <span className="text-muted-foreground font-medium">{r.pct?.toFixed(1)}% <span className="mx-2 text-muted-foreground/20">|</span> GP: <span className="text-purple-600 dark:text-purple-400 font-black">{r.gradePoints}</span></span>
                     </div>
                   )}
                 </div>
@@ -322,37 +376,31 @@ export default function CgpaPredictorPage() {
             })}
           </div>
 
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <button onClick={handleSave} disabled={sgpa===null||saving} className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl text-white font-bold transition-all disabled:opacity-40 shadow-lg shadow-purple-600/20 active:scale-[0.97]">{saving?'Saving...':'💾 Save Prediction'}</button>
-              {saveMsg&&<span className={`text-sm font-medium ${saveMsg.type==='ok'?'text-emerald-400':'text-red-400'}`}>{saveMsg.text}</span>}
+          <div className="space-y-6 pt-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <button onClick={handleSave} disabled={sgpa===null||saving} className="w-full sm:w-auto px-10 py-4 bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl transition-all disabled:opacity-40 shadow-xl shadow-purple-600/30 active:scale-[0.98]">{saving?'Persisting...':'💾 Save Prediction'}</button>
+              {saveMsg && (
+                <span className={`text-sm font-bold uppercase tracking-widest ${saveMsg.type==='ok'?'text-emerald-600':'text-red-500'}`}>
+                  {saveMsg.type==='ok' ? '✓ ' : '⚠ '}{saveMsg.text}
+                </span>
+              )}
             </div>
 
-            {/* Recent Predictions */}
-            <div className="pt-4 border-t border-gray-800">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span>🕒</span> Recent Predictions
+            <div className="pt-8 border-t border-border">
+              <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                <span className="h-[1px] w-8 bg-border"/> Recent Activity <span className="h-[1px] flex-1 bg-border"/>
               </h3>
               {history.length === 0 ? (
-                <p className="text-xs text-gray-600 italic">No history yet. Save a prediction to see it here.</p>
+                <p className="text-xs text-muted-foreground font-medium italic opacity-50">No historical data available yet. Start by saving a prediction.</p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {history.slice(0, 6).map((h: any) => (
-                    <div 
-                      key={h.id} 
-                      onClick={() => fillFromHistory(h)}
-                      className="p-3 bg-gray-900 border border-gray-800 rounded-xl cursor-pointer hover:border-purple-500 transition-all group"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs font-bold text-white group-hover:text-purple-400 transition-colors">{h.semester}</p>
-                          <p className="text-[10px] text-gray-500">{new Date(h.created_at).toLocaleDateString()}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-black text-purple-400">{h.predicted_sgpa}</p>
-                          <p className="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">SGPA</p>
-                        </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {history.slice(0, 4).map((h: any) => (
+                    <div key={h.id} onClick={() => fillFromHistory(h)} className="p-5 bg-card border border-border rounded-2xl cursor-pointer hover:border-purple-500/50 hover:shadow-md transition-all group">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-[10px] font-black text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors uppercase tracking-widest">{h.semester}</span>
+                        <span className="text-[16px] font-black text-purple-600 dark:text-purple-400 tracking-tighter">{h.predicted_sgpa}</span>
                       </div>
+                      <p className="text-[9px] text-muted-foreground font-bold tracking-widest uppercase">{new Date(h.created_at).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>

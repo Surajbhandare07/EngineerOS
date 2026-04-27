@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import Groq from 'groq-sdk';
-import { parsePdfToText } from './document-parser';
+import { universalDocumentParser } from './document-parser';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -44,22 +44,8 @@ export async function extractTextFromImage(formData: FormData) {
 
     if (uploadError) return { success: false, error: 'Upload failed: ' + uploadError.message }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('user_documents')
-      .getPublicUrl(`${user.id}/${fileName}`)
-
-    const visionResponse = await groq.chat.completions.create({
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Extract all syllabus topics and text from this image. Output ONLY plain text.' },
-          { type: 'image_url', image_url: { url: publicUrl } }
-        ]
-      }],
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-    })
-
-    const text = visionResponse.choices[0]?.message?.content?.trim() || ''
+    // Use universal parser
+    const { text } = await universalDocumentParser(file)
     return { success: true, data: text };
   } catch (error: any) {
     console.error("Image Processing Error:", error);
@@ -76,34 +62,56 @@ export async function extractTextFromPDF(formData: FormData) {
     await ensureProfile(supabase, user);
 
     const file = formData.get('file') as File | null;
+    const clientExtractedText = formData.get('extractedText') as string | null
+    const renderedImage = formData.get('renderedImage') as File | null
+
     if (!file) return { success: false, error: "No file provided." };
 
+    let transcription = ''
+
+    // Priority: Client text -> Client image -> Server fallback
+    if (clientExtractedText) {
+      transcription = clientExtractedText
+    } else if (renderedImage) {
+      const arrayBuffer = await renderedImage.arrayBuffer()
+      const base64 = Buffer.from(arrayBuffer).toString('base64')
+      
+      const response = await groq.chat.completions.create({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "You are an advanced academic OCR. Extract all text from this syllabus accurately."
+              },
+              {
+                type: "image_url",
+                image_url: { url: `data:image/png;base64,${base64}` }
+              }
+            ]
+          }
+        ]
+      })
+      transcription = response.choices[0]?.message?.content?.trim() || ''
+    } else {
+      const { text } = await universalDocumentParser(file)
+      transcription = text
+    }
+
+    if (!transcription || transcription.startsWith("Error")) {
+      return { success: false, error: transcription || 'Could not read the document.' }
+    }
+
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-
-    let text: string = '';
-    try {
-      text = await parsePdfToText(buffer);
-    } catch (parseErr: any) {
-      console.error('PDF Extraction Error:', parseErr);
-      return { success: false, error: 'Could not read the PDF. It might be scanned or protected. Try uploading as an image if it contains mostly diagrams.' };
-    }
-
-    if (text.length < 50) {
-      return { success: false, error: 'SCANNED_PDF: This PDF contains images instead of text. Please upload the pages as Images so the Vision AI can read them.' }
-    }
-
+    const buffer = Buffer.from(arrayBuffer);
     const fileName = `preppilot_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const storagePath = `${user.id}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    await supabase.storage
       .from('user_documents')
-      .upload(storagePath, buffer, {
-        contentType: 'application/pdf',
-        upsert: true
-      });
-
-    if (uploadError) return { success: false, error: "Cloud Storage Error: " + uploadError.message };
+      .upload(storagePath, buffer, { contentType: 'application/pdf', upsert: true });
 
     const { data: docData } = await supabase
       .from('documents')
@@ -116,7 +124,7 @@ export async function extractTextFromPDF(formData: FormData) {
       .select('id')
       .maybeSingle();
     
-    return { success: true, data: text, documentId: docData?.id };
+    return { success: true, data: transcription, documentId: docData?.id };
   } catch (error: any) {
     console.error("PDF Processing Error:", error);
     return { success: false, error: error.message || "Failed to process PDF." };

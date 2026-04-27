@@ -3,13 +3,14 @@
 import Groq from 'groq-sdk';
 import { createClient } from '@/utils/supabase/server';
 import { Language } from '@/types'
-import { parsePdfToText } from './document-parser';
+import { universalDocumentParser } from './document-parser'
+import { getUserProfile } from './profile'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /* ─────────────────────────────────────────────────────────────────────
    New: Extract text from an uploaded PDF or Image for Viva context
- ───────────────────────────────────────────────────────────────────── */
+───────────────────────────────────────────────────────────────────── */
 export async function extractTextForViva(formData: FormData) {
   try {
     const supabase = await createClient()
@@ -17,60 +18,48 @@ export async function extractTextForViva(formData: FormData) {
     if (!user || authError) throw new Error('Unauthorized')
 
     const file = formData.get('file') as File | null
+    const clientExtractedText = formData.get('extractedText') as string | null
+    const renderedImage = formData.get('renderedImage') as File | null
+
     if (!file) return { success: false, error: 'No file provided.' }
 
-    const isPdf = file.type === 'application/pdf'
+    let transcription = ''
 
-    if (isPdf) {
-      // ── PDF: extract text with fallbacks ──
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(new Uint8Array(arrayBuffer))
-
-      let extractedText: string = '';
-      try {
-        extractedText = await parsePdfToText(buffer);
-      } catch (parseErr: any) {
-        console.error('PDF Extraction Error:', parseErr);
-        return { success: false, error: 'Could not read the PDF. It might be scanned or protected.' };
-      }
-
-      if (extractedText.length < 50) {
-        return { success: false, error: 'SCANNED_PDF: This PDF appears to be image-based. Please upload the pages as images instead.' }
-      }
-
-      return { success: true, extractedText }
-    } else {
-      // ── Image: transcribe via Groq Vision ──
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-      const fileName = `viva_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('handwritten_notes')
-        .upload(`${user.id}/${fileName}`, buffer, { contentType: file.type, upsert: true })
-
-      if (uploadError) return { success: false, error: 'Upload failed: ' + uploadError.message }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('handwritten_notes')
-        .getPublicUrl(`${user.id}/${fileName}`)
-
-      const visionResponse = await groq.chat.completions.create({
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: 'Transcribe ALL text visible in this document/image. Output plain text only, preserving structure.' },
-            { type: 'image_url', image_url: { url: publicUrl } }
-          ]
-        }],
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    // Priority: Client text -> Client image -> Server fallback
+    if (clientExtractedText) {
+      transcription = clientExtractedText
+    } else if (renderedImage) {
+      const arrayBuffer = await renderedImage.arrayBuffer()
+      const base64 = Buffer.from(arrayBuffer).toString('base64')
+      
+      const response = await groq.chat.completions.create({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "You are an advanced academic OCR. Extract all text from this study material accurately."
+              },
+              {
+                type: "image_url",
+                image_url: { url: `data:image/png;base64,${base64}` }
+              }
+            ]
+          }
+        ]
       })
-
-      const extractedText = visionResponse.choices[0]?.message?.content?.trim() ?? ''
-      if (!extractedText) return { success: false, error: 'AI could not read the image.' }
-
-      return { success: true, extractedText }
+      transcription = response.choices[0]?.message?.content?.trim() || ''
+    } else {
+      const { text } = await universalDocumentParser(file)
+      transcription = text
     }
+    
+    if (!transcription || transcription.startsWith("Error")) {
+      return { success: false, error: transcription || 'AI could not read the document.' }
+    }
+    return { success: true, extractedText: transcription }
   } catch (error: any) {
     console.error('extractTextForViva error:', error)
     return { success: false, error: error.message || 'Failed to extract text.' }
@@ -89,7 +78,7 @@ export async function askVivaQuestion(topic: string, language: Language, history
     You must strictly ask one question at a time. Do not provide the answer. Wait for the student to answer.
     If the student answers incorrectly, give a strict but constructive remark and correct them. 
     If they answer correctly, give a short nod of approval and ask the next question.
-    You MUST respond entirely in ${language}.`;
+    Match the student's language naturally. Respond in the same language and style that the student uses to communicate with you.`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -136,7 +125,7 @@ YOUR RULES:
 4. Wait for the student to answer before evaluating.
 5. After the student answers, briefly evaluate (Correct ✅ / Partially Correct 🟡 / Incorrect ❌) with a short explanation, then ask the next question.
 6. Be strict but constructive. If wrong, tell them the correct answer briefly.
-7. Respond entirely in ${language}.
+7. Match the student's language naturally. Respond in the same language that the student uses to communicate with you.
 8. Start the exam immediately with your first question.
 
 [SOURCE DOCUMENT]:
@@ -207,7 +196,7 @@ export async function askStudyDriveQuestion(documentText: string, question: stri
     You have been provided with the extracted text from a student's document below.
     You MUST answer the student's question strictly based on the information provided in the document.
     If the answer is not in the document, politely say that you cannot find the answer in the provided text.
-    You MUST respond entirely in ${language}.
+    Match the student's language naturally. Respond in the same language that the student uses to communicate with you.
     
     Document Context:
     ${documentText.substring(0, 30000)} /* Truncate if extremely large to save tokens */`;
@@ -240,7 +229,7 @@ export async function askPrepPilotQuestion(syllabusText: string, question: strin
       : 'Student';
 
     let systemPrompt = `You are an expert AI tutor helping a student with their syllabus.
-    You MUST respond entirely in ${language}.
+    Match the student's language naturally. Respond in the same language that the student uses to communicate with you.
     Syllabus Context: ${syllabusText.substring(0, 10000)}`;
 
     if (isPanicMode) {
@@ -271,6 +260,35 @@ export async function askPrepPilotQuestion(syllabusText: string, question: strin
     return { success: true, data: chatCompletion.choices[0]?.message?.content || "" };
   } catch (error: any) {
     console.error("PrepPilot Chat Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   New: High-fidelity Text to Speech using Groq Orpheus
+───────────────────────────────────────────────────────────────────── */
+export async function generateSpeech(text: string) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // Clean text: remove markdown artifacts like ** and *
+    const cleanText = text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/#/g, '').trim()
+
+    const response = await groq.audio.speech.create({
+      model: "canopylabs/orpheus-v1-english",
+      voice: "hannah", 
+      input: cleanText,
+      response_format: "wav",
+    });
+    
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const base64 = buffer.toString('base64');
+    
+    return { success: true, audio: `data:audio/wav;base64,${base64}` };
+  } catch (error: any) {
+    console.error('Groq TTS Error:', error);
     return { success: false, error: error.message };
   }
 }
