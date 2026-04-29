@@ -89,7 +89,7 @@ export default function SmartNotesPage() {
   useEffect(() => { fetchHistory() }, [])
 
   const fetchHistory = async () => {
-    const res = await getSmartNotes()
+    const res: any = await getSmartNotes()
     if (res.success && res.data) setHistory(res.data)
   }
 
@@ -201,7 +201,7 @@ export default function SmartNotesPage() {
           formData.append('file', compressedFile)
         }
 
-        const res = item.isPdf
+        const res: any = item.isPdf
           ? await generateNotesFromPDF(formData)
           : await generateNotesFromImage(formData)
 

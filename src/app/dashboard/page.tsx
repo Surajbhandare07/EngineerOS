@@ -16,7 +16,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true)
-      const [tasksRes, docsRes] = await Promise.all([
+      const [tasksRes, docsRes]: [any, any] = await Promise.all([
         getUserTasks(),
         getUserDocuments()
       ])

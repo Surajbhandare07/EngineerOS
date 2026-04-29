@@ -160,7 +160,7 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
       setDownvotes(Math.max(0, downvotes - 1))
     }
     
-    const res = await toggleUpvote(post.id)
+    const res: any = await toggleUpvote(post.id)
     if (res.success) {
       setUpvotes(res.upvotes)
       setDownvotes(res.downvotes)
@@ -178,7 +178,7 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
       setUpvotes(Math.max(0, upvotes - 1))
     }
     
-    const res = await toggleDownvote(post.id)
+    const res: any = await toggleDownvote(post.id)
     if (res.success) {
       setUpvotes(res.upvotes)
       setDownvotes(res.downvotes)
@@ -195,7 +195,7 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
   }
 
   const fetchPostReplies = async () => {
-    const res = await getReplies(post.id)
+    const res: any = await getReplies(post.id)
     if (res.success) setReplies(res.data || [])
   }
 
@@ -208,7 +208,7 @@ function PostCard({ post, initialIsUpvoted, initialIsDownvoted, refreshFeed }: {
     e.preventDefault()
     if (!replyContent.trim()) return
     setReplying(true)
-    const res = await addReply(post.id, replyContent, post.academic_year, replyYear)
+    const res: any = await addReply(post.id, replyContent, post.academic_year, replyYear)
     if (res.success) {
        setReplyContent('')
        fetchPostReplies()
@@ -392,13 +392,13 @@ export default function CommunityPage() {
 
   const fetchPosts = async () => {
     setLoading(true)
-    const res = await getPosts(filter)
+    const res: any = await getPosts(filter)
     if (res.success) {
       setPosts(res.data || [])
       setUserUpvotedIds(res.userUpvotedIds || [])
       setUserDownvotedIds(res.userDownvotedIds || [])
     }
-    const pointsRes = await getMentorPoints()
+    const pointsRes: any = await getMentorPoints()
     if (pointsRes.success) {
       setMentorPoints(pointsRes.data)
     }
@@ -410,7 +410,7 @@ export default function CommunityPage() {
     if (!content.trim()) return
     setSubmitting(true)
     setError(null)
-    const res = await createPost({ content, academic_year: year, department: dept })
+    const res: any = await createPost({ content, academic_year: year, department: dept })
     if (res.success) {
       setContent('')
       setIsModalOpen(false)

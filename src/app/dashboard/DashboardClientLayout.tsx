@@ -56,7 +56,7 @@ export default function DashboardClientLayout({
   }, [])
 
   const fetchNotifications = async () => {
-    const res = await getNotifications()
+    const res: any = await getNotifications()
     if (res.success) {
       setNotifications(res.data || [])
     }

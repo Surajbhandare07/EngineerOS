@@ -20,7 +20,7 @@ export default function SettingsPage() {
   }, [])
 
   const fetchProfile = async () => {
-    const res = await getUserProfile()
+    const res: any = await getUserProfile()
     if (res.success) {
       setProfile(res.data)
     }
@@ -33,7 +33,7 @@ export default function SettingsPage() {
     setMessage(null)
 
     const formData = new FormData(e.currentTarget)
-    const res = await updateProfile(formData)
+    const res: any = await updateProfile(formData)
 
     if (res.success) {
       setMessage({ type: 'success', text: 'Profile updated successfully!' })

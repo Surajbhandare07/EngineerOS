@@ -83,7 +83,7 @@ export default function EngineerOSPage() {
   }, [messages, loadingMsg])
 
   const loadSessions = useCallback(async () => {
-    const res = await getPrepPilotSessions()
+    const res: any = await getPrepPilotSessions()
     if (res.success && res.data) {
       setSessions(res.data)
     }
@@ -91,7 +91,7 @@ export default function EngineerOSPage() {
 
   useEffect(() => {
     loadSessions()
-    getUserProfile().then(res => {
+    getUserProfile().then((res: any) => {
       if (res.success) setProfile(res.data)
     })
   }, [loadSessions])
@@ -107,7 +107,7 @@ export default function EngineerOSPage() {
     setCurrentSessionId(session.id)
     setComplexMode(false)
     setLoadingMsg(true)
-    const res = await getPrepPilotMessages(session.id)
+    const res: any = await getPrepPilotMessages(session.id)
     if (res.success && res.data) {
       setMessages(res.data.map((m: any) => ({ 
         role: m.role === 'assistant' ? 'model' : 'user', 
@@ -167,10 +167,10 @@ export default function EngineerOSPage() {
               if (blob) formData.append('renderedImage', blob, 'page1.png')
             }
           }
-          const res = await extractTextFromPDF(formData)
+          const res: any = await extractTextFromPDF(formData)
           extracted = res.data || ''
         } else {
-          const res = await extractTextFromImage(formData)
+          const res: any = await extractTextFromImage(formData)
           extracted = res.data || ''
         }
 
@@ -219,7 +219,7 @@ export default function EngineerOSPage() {
       let sessionId = currentSessionId
       if (!sessionId) {
         const title = msgText ? msgText.slice(0, 30).trim() : (filesToClear[0]?.file.name || 'New Chat')
-        const res = await createPrepPilotSession(title)
+        const res: any = await createPrepPilotSession(title)
         if (res.success && res.data) {
           sessionId = res.data.id
           setCurrentSessionId(sessionId)
@@ -281,7 +281,7 @@ export default function EngineerOSPage() {
   const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     if (confirm('Delete this chat?')) {
-      const res = await deletePrepPilotSession(id)
+      const res: any = await deletePrepPilotSession(id)
       if (res.success) {
         if (currentSessionId === id) handleNewChat()
         loadSessions()

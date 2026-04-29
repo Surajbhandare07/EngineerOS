@@ -76,7 +76,7 @@ export default function VivaAIPage() {
 
   const fetchHistory = async () => {
     setLoadingSessions(true)
-    const res = await getVivaSessions()
+    const res: any = await getVivaSessions()
     if (res.success) {
       setSessions(res.data || [])
     }
@@ -124,7 +124,7 @@ export default function VivaAIPage() {
     setAudioLoading(true)
     try {
       // 1. Try High-Fidelity Groq TTS
-      const res = await generateSpeech(text)
+      const res: any = await generateSpeech(text)
       if (res.success && res.audio) {
         const audio = new Audio(res.audio)
         audioRef.current = audio
@@ -132,7 +132,7 @@ export default function VivaAIPage() {
       } else {
         throw new Error(res.error || "Groq TTS failed")
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Groq TTS failed, falling back to browser speech:", err)
       // 2. Fallback to Browser Native TTS
       if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -225,7 +225,7 @@ export default function VivaAIPage() {
     if (clientExtractedText) formData.append('extractedText', clientExtractedText)
     if (renderedImageBlob) formData.append('renderedImage', renderedImageBlob, 'page1.png')
 
-    const res = await extractTextForViva(formData)
+    const res: any = await extractTextForViva(formData)
 
     if (res.success && res.extractedText) {
       if (started) {
@@ -257,7 +257,7 @@ export default function VivaAIPage() {
     setMessages([{ role: 'model', content: greetingText }])
     speakText(greetingText)
 
-    let res
+    let res: any
     if (extractedContext) {
       res = await askVivaQuestionWithContext(sessionTopic, language, [], extractedContext)
     } else {
@@ -290,7 +290,7 @@ export default function VivaAIPage() {
       ? (topic || docFile?.name?.replace(/\.[^/.]+$/, '') || 'Uploaded Document')
       : topic
 
-    let res
+    let res: any
     if (extractedContext) {
       res = await askVivaQuestionWithContext(sessionTopic, language, newMessages, extractedContext)
     } else {
