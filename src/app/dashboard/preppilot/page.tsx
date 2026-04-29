@@ -162,7 +162,8 @@ export default function EngineerOSPage() {
             canvas.height = viewport.height
             canvas.width = viewport.width
             if (ctx) {
-              await page.render({ canvasContext: ctx, viewport }).promise
+              // @ts-ignore
+              await page.render({ canvasContext: ctx, viewport, canvas } as any).promise
               const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'))
               if (blob) formData.append('renderedImage', blob, 'page1.png')
             }

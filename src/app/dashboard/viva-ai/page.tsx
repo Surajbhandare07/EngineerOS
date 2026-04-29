@@ -201,7 +201,8 @@ export default function VivaAIPage() {
           canvas.width = viewport.width
 
           if (context) {
-            await page.render({ canvasContext: context, viewport }).promise
+            // @ts-ignore
+            await page.render({ canvasContext: context, viewport, canvas } as any).promise
             const dataUrl = canvas.toDataURL('image/png')
             const res = await fetch(dataUrl)
             renderedImageBlob = await res.blob()
