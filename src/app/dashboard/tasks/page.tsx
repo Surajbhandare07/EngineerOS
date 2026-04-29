@@ -24,7 +24,7 @@ export default function TasksPage() {
 
   const fetchTasks = async () => {
     setLoading(true)
-    const res = await getUserTasks()
+    const res: any = await getUserTasks()
     if (res.success && res.data) {
       setTasks(res.data)
     }
@@ -37,7 +37,7 @@ export default function TasksPage() {
     // Optimistic update
     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t))
     
-    const res = await updateTaskStatus(task.id, newStatus)
+    const res: any = await updateTaskStatus(task.id, newStatus)
     if (!res.success) {
       // Revert if failed
       setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: task.status } : t))

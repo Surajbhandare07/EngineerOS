@@ -64,9 +64,10 @@ export default function StudyDrivePage() {
           canvas.width = viewport.width
 
           if (context) {
-            await page.render({ canvasContext: context, viewport }).promise
+            // @ts-ignore
+            await page.render({ canvasContext: context, viewport, canvas } as any).promise
             const dataUrl = canvas.toDataURL('image/png')
-            const res = await fetch(dataUrl)
+            const res: any = await fetch(dataUrl)
             renderedImageBlob = await res.blob()
           }
         }
@@ -80,7 +81,7 @@ export default function StudyDrivePage() {
     if (clientExtractedText) formData.append('extractedText', clientExtractedText)
     if (renderedImageBlob) formData.append('renderedImage', renderedImageBlob, 'page1.png')
 
-    const res = await extractTextFromPDF(formData)
+    const res: any = await extractTextFromPDF(formData)
     
     if (res.success && res.data) {
       console.log("Extracted Text:", res.data)
@@ -104,7 +105,7 @@ export default function StudyDrivePage() {
     setInput('')
     setLoadingMsg(true)
 
-    const res = await askStudyDriveQuestion(documentText, userMsg.content, language, messages)
+    const res: any = await askStudyDriveQuestion(documentText, userMsg.content, language, messages)
     
     if (res.success && res.data) {
       setMessages([...newMessages, { role: 'model', content: res.data }])
