@@ -46,7 +46,7 @@ export default function FileManagerPage() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [filesRes, breadRes] = await Promise.all([
+    const [filesRes, breadRes]: [any, any] = await Promise.all([
       getFilesAndFolders(currentFolderId),
       getBreadcrumbs(currentFolderId)
     ])
@@ -64,7 +64,7 @@ export default function FileManagerPage() {
     if (!newFolderName.trim()) return
 
     setShowNewFolderModal(false)
-    const res = await createFolder(newFolderName, currentFolderId)
+    const res: any = await createFolder(newFolderName, currentFolderId)
     if (res.success) {
       setFolders(prev => [...prev, res.folder])
       setNewFolderName('')
@@ -72,7 +72,7 @@ export default function FileManagerPage() {
   }
 
   const handleDelete = async (id: string, type: 'file' | 'folder') => {
-    const res = await deleteItem(id, type)
+    const res: any = await deleteItem(id, type)
     if (res.success) {
       if (type === 'file') setDocuments(prev => prev.filter(d => d.id !== id))
       else setFolders(prev => prev.filter(f => f.id !== id))
@@ -84,7 +84,7 @@ export default function FileManagerPage() {
     for (let i = 0; i < fileList.length; i++) {
       const formData = new FormData()
       formData.append('file', fileList[i])
-      const res = await uploadFile(formData, currentFolderId)
+      const res: any = await uploadFile(formData, currentFolderId)
       if (res.success) {
         setDocuments(prev => [...prev, res.document])
       }
@@ -94,7 +94,7 @@ export default function FileManagerPage() {
 
   const handleToggleShare = async (doc: any) => {
     const newStatus = !doc.is_public
-    const res = await toggleShare(doc.id, newStatus)
+    const res: any = await toggleShare(doc.id, newStatus)
     if (res.success) {
       setDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, is_public: newStatus } : d))
       if (shareModalDoc?.id === doc.id) {

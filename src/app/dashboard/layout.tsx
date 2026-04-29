@@ -8,7 +8,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const profileRes = await getUserProfile()
+  const profileRes: any = await getUserProfile()
   const profile = profileRes.success ? profileRes.data : null
 
   return (
