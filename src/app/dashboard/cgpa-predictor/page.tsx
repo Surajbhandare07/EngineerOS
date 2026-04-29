@@ -56,9 +56,18 @@ export default function CgpaPredictorPage() {
   const [newIntMax, setNewIntMax] = useState('25')
   const [newExtMax, setNewExtMax] = useState('25')
 
-  useEffect(() => { getUserProfile().then((r: any) => { if (r.success && r.data) setFirstName(r.data.first_name || '') }) }, [])
+  useEffect(() => { 
+    // @ts-ignore
+    getUserProfile().then((r: any) => { if (r.success && r.data) setFirstName(r.data.first_name || '') }) 
+  }, [])
 
-  const loadHistory = useCallback(async () => { setLoadingHistory(true); const r: any = await getCgpaPredictions(); if (r.success) setHistory(r.data || []); setLoadingHistory(false) }, [])
+  const loadHistory = useCallback(async () => { 
+    setLoadingHistory(true); 
+    // @ts-ignore
+    const r: any = await getCgpaPredictions(); 
+    if (r.success) setHistory(r.data || []); 
+    setLoadingHistory(false) 
+  }, [])
   useEffect(() => { if (showHistory) loadHistory() }, [showHistory, loadHistory])
 
   const totalCredits = subjects.reduce((s, sub) => s + sub.credits, 0)
