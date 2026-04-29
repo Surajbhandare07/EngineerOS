@@ -2,8 +2,10 @@ export type Language = 'English' | 'Hindi' | 'Marathi' | 'Tamil' | 'Telugu';
 
 export interface Profile {
   id: string;
-  full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   preferred_language: Language;
+  bio: string | null;
   created_at: string;
 }
 

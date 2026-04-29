@@ -230,7 +230,8 @@ export default function EngineerOSPage() {
         }
       }
 
-      savePrepPilotMessage(sessionId, 'user', fullMsg).catch(err => console.error("Save error:", err))
+      // @ts-ignore
+      savePrepPilotMessage(sessionId!, 'user', fullMsg).catch(err => console.error("Save error:", err))
 
       const response = await fetch('/api/chat/preppilot', {
         method: 'POST',
@@ -241,7 +242,7 @@ export default function EngineerOSPage() {
           language,
           history: [...currentMessages, userDisplayMsg],
           complexMode,
-          firstName: profile?.first_name
+          firstName: profile?.first_name || 'Engineer'
         })
       });
 
@@ -268,7 +269,8 @@ export default function EngineerOSPage() {
         })
       }
 
-      savePrepPilotMessage(sessionId, 'assistant', aiContent).catch(err => console.error("Save AI error:", err))
+      // @ts-ignore
+      savePrepPilotMessage(sessionId!, 'assistant', aiContent).catch(err => console.error("Save AI error:", err))
 
     } catch (err: any) {
       console.error("Chat Error:", err)
