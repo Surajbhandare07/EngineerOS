@@ -68,7 +68,7 @@ export async function extractTextForViva(formData: FormData) {
 
 export async function askVivaQuestion(topic: string, language: Language, history: any[]) {
   try {
-    const profileRes = await getUserProfile();
+    const profileRes: any = await getUserProfile();
     const firstName = profileRes.success && profileRes.data?.first_name 
       ? profileRes.data.first_name 
       : 'Student';
@@ -110,7 +110,7 @@ export async function askVivaQuestionWithContext(
   documentContext: string
 ) {
   try {
-    const profileRes = await getUserProfile();
+    const profileRes: any = await getUserProfile();
     const firstName = profileRes.success && profileRes.data?.first_name 
       ? profileRes.data.first_name 
       : 'Student';
@@ -153,7 +153,7 @@ ${documentContext.slice(0, 28000)}`;
 
 export async function generateStudyPlan(syllabusText: string, language: Language) {
   try {
-    const profileRes = await getUserProfile();
+    const profileRes: any = await getUserProfile();
     const firstName = profileRes.success && profileRes.data?.first_name 
       ? profileRes.data.first_name 
       : 'Student';
@@ -223,7 +223,7 @@ export async function askStudyDriveQuestion(documentText: string, question: stri
 }
 export async function askPrepPilotQuestion(syllabusText: string, question: string, language: Language, history: any[], isPanicMode: boolean) {
   try {
-    const profileRes = await getUserProfile();
+    const profileRes: any = await getUserProfile();
     const firstName = profileRes.success && profileRes.data?.first_name 
       ? profileRes.data.first_name 
       : 'Student';
