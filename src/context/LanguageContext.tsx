@@ -22,7 +22,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
     
     // sync with Supabase
-    getUserProfile().then(res => {
+    getUserProfile().then((res: any) => {
       if (res.success && res.data?.preferred_language) {
         setLanguageState(res.data.preferred_language as Language);
         localStorage.setItem('engineerOS_lang', res.data.preferred_language);
