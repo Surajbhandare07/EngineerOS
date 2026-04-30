@@ -1,6 +1,5 @@
 'use server'
 
-export const maxDuration = 60;
 
 import { createClient } from '@/utils/supabase/server'
 import Groq from 'groq-sdk'

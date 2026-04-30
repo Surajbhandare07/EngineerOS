@@ -2,6 +2,7 @@ import { getUserProfile } from '@/lib/actions/profile'
 import DashboardClientLayout from './DashboardClientLayout'
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export default async function DashboardLayout({
   children,
