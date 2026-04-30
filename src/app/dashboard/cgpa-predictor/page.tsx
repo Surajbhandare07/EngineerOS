@@ -97,19 +97,23 @@ export default function CgpaPredictorPage() {
       const lastField = s.markFields[s.markFields.length - 1]
       if (m[lastField.key] === '') blanks.push(i); else fixedGP += (results[i].gradePoints ?? 0) * s.credits
     }
-    if (!blanks.length) return null; const remainGP = targetGP - fixedGP
+    if (!blanks.length) return null; 
+    
+    const remainGP = targetGP - fixedGP;
+    const blankCredits = blanks.reduce((sum, i) => sum + subjects[i].credits, 0);
+    const avgNeededGradePoint = remainGP / blankCredits;
+
     return blanks.map(bi => {
       const s = subjects[bi]; const m = marks[bi]; const lastF = s.markFields[s.markFields.length - 1]
       const maxTotal = s.markFields.reduce((a, f) => a + f.max, 0)
       const filledSum = s.markFields.filter(f => f.key !== lastF.key).reduce((sum, f) => sum + (m[f.key] === '' ? 0 : Number(m[f.key])), 0)
-      let otherBlanksGP = 0
-      for (const oi of blanks) {
-        if (oi === bi) continue; const os = subjects[oi]; const om = marks[oi]
-        const oLast = os.markFields[os.markFields.length - 1]; const oFilled = os.markFields.filter(f => f.key !== oLast.key).reduce((s2, f) => s2 + (om[f.key] === '' ? 0 : Number(om[f.key])), 0)
-        const oMax = os.markFields.reduce((a, f) => a + f.max, 0); otherBlanksGP += getGrade((oFilled / oMax) * 100).points * os.credits
+      
+      let found: number | 'impossible' = 'impossible'
+      for (let mk = 0; mk <= lastF.max; mk++) { 
+        if (getGrade(((filledSum + mk) / maxTotal) * 100).points >= avgNeededGradePoint) { 
+          found = mk; break 
+        } 
       }
-      const needed = remainGP - otherBlanksGP; let found: number | 'impossible' = 'impossible'
-      for (let mk = 0; mk <= lastF.max; mk++) { if (getGrade(((filledSum + mk) / maxTotal) * 100).points * s.credits >= needed) { found = mk; break } }
       return { idx: bi, neededMarks: found, fieldName: lastF.key }
     })
   }
@@ -288,7 +292,7 @@ export default function CgpaPredictorPage() {
                 <div>
                   <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
                     <span className="p-2 bg-purple-500/10 rounded-xl">🔮</span>
-                    What-If Analysis
+                    What-If Analysis <span className="text-[10px] bg-emerald-500/20 text-emerald-500 px-2 py-1 rounded-md">v2.0</span>
                   </h2>
                   <p className="text-xs text-muted-foreground font-medium mt-1">Leave any final mark field blank to predict required score.</p>
                 </div>
