@@ -1,5 +1,7 @@
 'use server'
 
+export const maxDuration = 60;
+
 import { createClient } from '@/utils/supabase/server'
 import Groq from 'groq-sdk'
 import { revalidatePath } from 'next/cache'
@@ -143,8 +145,11 @@ export async function generateNotesFromImage(formData: FormData) {
       .from('handwritten_notes')
       .getPublicUrl(storagePath)
 
+    // Reconstruct File from buffer since the original stream is now consumed
+    const safeFile = new File([buffer], file.name, { type: file.type })
+
     // 2. Universal Parsing — handles text extraction or Vision fallback
-    const { text: rawTranscription } = await universalDocumentParser(file)
+    const { text: rawTranscription } = await universalDocumentParser(safeFile)
     if (!rawTranscription || rawTranscription.startsWith("Error")) {
       return { success: false, error: rawTranscription || 'AI failed to transcribe the image.' }
     }
@@ -190,6 +195,11 @@ export async function generateNotesFromPDF(formData: FormData) {
 
     if (!file) return { success: false, error: 'No file provided.' }
 
+    // Read buffer ONCE to prevent stream-consumption errors on Vercel
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    const safeFile = new File([buffer], file.name, { type: file.type })
+
     let rawTranscription = ''
 
     // 1. Logic Priority: Client-side text -> Client-side image -> Server-side parser fallback
@@ -198,8 +208,8 @@ export async function generateNotesFromPDF(formData: FormData) {
       rawTranscription = clientExtractedText
     } else if (renderedImage) {
       console.log("[Server] Using client-rendered PDF image.")
-      const arrayBuffer = await renderedImage.arrayBuffer()
-      const base64 = Buffer.from(arrayBuffer).toString('base64')
+      const renderedArrayBuffer = await renderedImage.arrayBuffer()
+      const base64 = Buffer.from(renderedArrayBuffer).toString('base64')
       
       const response = await groq.chat.completions.create({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -223,7 +233,7 @@ export async function generateNotesFromPDF(formData: FormData) {
       rawTranscription = response.choices[0]?.message?.content?.trim() || ''
     } else {
       console.log("[Server] No client pre-processing, falling back to universalDocumentParser.")
-      const { text } = await universalDocumentParser(file)
+      const { text } = await universalDocumentParser(safeFile)
       rawTranscription = text
     }
 
@@ -235,8 +245,6 @@ export async function generateNotesFromPDF(formData: FormData) {
     const { title, markdown: markdownContent } = await formatWithGroq(rawTranscription)
 
     // 3. Store original PDF for history record
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
     const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
     
     await supabase.storage
